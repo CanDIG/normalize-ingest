@@ -1,0 +1,7 @@
+{
+    "workflow_params/json_path": "testdata/md5sum.cwl.json",
+    "workflow_type": "CWL",
+    "workflow_type_version": "v1.0",
+    "workflow_url/name": "https://dockstore.org:8443/api/ga4gh/v2/tools/quay.io%2Fbriandoconnor%2Fdockstore-tool-md5sum/versions/master/plain-CWL/descriptor/%2FDockstore.cwl",
+    "workflow_attachment": ""
+}
