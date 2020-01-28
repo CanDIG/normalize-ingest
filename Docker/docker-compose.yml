@@ -1,0 +1,14 @@
+version: '3'
+services:
+  wes:
+    image: "wes-server"
+    ports:
+      - "8080:8080"
+    volumes:
+      - /usr/local/bin/docker:/usr/local/bin/docker
+      - /var:/var
+      - /Users:/Users
+  listener:
+    image: "listener"
+    ports:
+      - "8082:8082"
