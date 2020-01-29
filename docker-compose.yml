@@ -36,10 +36,14 @@ services:
     build:
       context: $PWD
     image: candig/listener-service:${LISTENER_VERSION:-latest}
+    init: true
     volumes:
       - $PWD:/srv
     ports:
       - "${LISTENER_PORT:-8080}:8080"
+    environment:
+      - FLASK_ENV=${LISTENER_ENV:-development}
+    command: ["flask", "run"]
 
   wes-server:
     image: candig/wes-server:${WES_VERSION:-3.3}

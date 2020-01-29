@@ -3,5 +3,5 @@ RUN pip install flask
 RUN pip install requests
 RUN pip install minio
 RUN pip install wes-service
-COPY listener.py /srv/server.py
-ENTRYPOINT [ "python", "/srv/server.py"]
+COPY listener.py /srv/listener.py
+ENTRYPOINT [ "python", "/srv/listener.py"]
