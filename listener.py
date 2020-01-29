@@ -16,6 +16,9 @@ def main():
     if not request.data:
         return "First Request Ignored", 406
 
+    # Get the name of the added file
+    # newMinioFile = json.loads(request.data)['Key']
+
     # Retrieve Workflow Data from workflowInput.json
     inFile = open("workflowInput.json", "r")
     if inFile.mode == "r":
@@ -32,7 +35,7 @@ def main():
     # But this gives drive specific paths
     param["workflow_params"] = modify_jsonyaml_paths(param["workflow_params"])
 
-    clientObject = util.WESClient({'auth': '', 'proto': 'http', 'host': "wes:8080"})
+    clientObject = util.WESClient({'auth': '', 'proto': 'http', 'host': "wes-server:5000"})
     req = clientObject.run(param["workflow_url"], param["workflow_params"], param["workflow_attachment"])
 
     return "Workflow Request Sent"
