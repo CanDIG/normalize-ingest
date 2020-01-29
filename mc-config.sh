@@ -2,9 +2,9 @@
 
 set -xe
 
-source $(pwd)/.env
+source "$(pwd)"/.env
 shopt -s expand_aliases
-alias mc="docker exec -it $(basename `pwd`)_mc_1 mc"
+alias mc="docker exec -it $(basename "`pwd`")_mc_1 mc"
 
 mc config host add minio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY --api S3v4
 
