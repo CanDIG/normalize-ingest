@@ -5,6 +5,13 @@
 
 ## Workflow
 
+```mermaid
+graph LR
+  mc(minio client)
+  ms[(minio server)]
+  mc-->ms
+```
+
 
 ## Task list
 
