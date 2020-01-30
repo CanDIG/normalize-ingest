@@ -3,6 +3,7 @@ version: '3.7'
 services:
   minio:
     image: minio/minio:${MINIO_VERSION:-latest}
+    init: true
     volumes:
       - minio-data:/data
       - minio-config:/root/.minio
@@ -30,28 +31,39 @@ services:
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
-    entrypoint: ["watch", "mc", "version"]
+    command: ["watch", "play"]
 
   listener:
     build:
       context: $PWD
     image: candig/listener-service:${LISTENER_VERSION:-latest}
     init: true
-    volumes:
-      - $PWD:/srv
+    #volumes:
+      #- $PWD:/srv
     ports:
       - "${LISTENER_PORT:-8080}:8080"
     environment:
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
-    command: ["flask", "run"]
+    #command: ["flask", "run"]
 
   wes-server:
     image: candig/wes-server:${WES_VERSION:-3.3}
+    init: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - /var/lib/docker/volumes:/var/lib/docker/volumes:rw
     ports:
       - "${WES_PORT:-5000}:5000"
+    environment:
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
+      - FLASK_ENV=${LISTENER_ENV:-development}
     entrypoint: ["wes-server"]
     command:
       - --port=5000
