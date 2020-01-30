@@ -2,7 +2,7 @@
 """
 doc
 """
-# import json
+import json
 import os
 import subprocess
 
@@ -25,6 +25,10 @@ def main():
     if not request.data:
         return "First Request Ignored", 406
 
+    # Get the name of the added file
+    dataobject = json.loads(request.data)['Key']
+    path = dataobject.split("/")
+
     client = Minio('minio:9000',
                    access_key=str(os.environ["MINIO_ACCESS_KEY"]),
                    secret_key=str(os.environ["MINIO_SECRET_KEY"]),
@@ -33,27 +37,27 @@ def main():
     # Get a full object
     try:
         client.fget_object(
-            'samples', 'unprocessed/NA18537.vcf.gz', 'NA18537.vcf.gz')
+            str(path[0]), str(path[1] + "/" + path[2]), str(path[2]))
     except ResponseError as err:
         print(err)
 
     # Run bcftools via subprocess and output to local directory
-    subprocess.run(['bcftools', 'norm', '-d', 'all', 'NA18537.vcf.gz',
-                    '-o', 'NA18537-normalized.vcf'],
-                   check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    outfile = str(path[2]).split(".")
+    outfile = str(outfile[0] + "-normalized.vcf")
+
+    subprocess.run(['bcftools', 'norm', '-d', 'all', str(path[2]),
+                    '-o', str(outfile)],check=True,
+                   stdout=subprocess.PIPE, universal_newlines=True)
 
     # Put 'NA18537-normalized.vcf' into minio/samples/processed/
     try:
-        client.fput_object('samples',
-                           'processed/NA18537-normalized.vcf',
-                           'NA18537-normalized.vcf')
+        client.fput_object(str(path[0]), str("processed/" + outfile),
+                           str(outfile))
     except ResponseError as err:
         print(err)
 
     return "Workflow successful"
 
-    # Get the name of the added file
-    # newMinioFile = json.loads(request.data)['Key']
 
     # Retrieve Workflow Data from workflowInput.json
     # inFile = open("workflowInput.json", "r")
