@@ -1,0 +1,3 @@
+bashFile:
+  class: File
+  path: bash.sh

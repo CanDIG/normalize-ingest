@@ -1,0 +1,3 @@
+normalized.vcf:
+  class: File
+  path: normalized.vcf
