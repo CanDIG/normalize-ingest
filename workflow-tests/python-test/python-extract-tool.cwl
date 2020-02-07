@@ -5,13 +5,17 @@ $namespaces:
 baseCommand:
   - python
 inputs:
-  - id: input
-    type: File?
+  - id: pyfile
+    type: File
     inputBinding:
       position: 0
+  - id: minio-path
+    type: string
+    inputBinding:
+      position: 1
 outputs:
   - id: UnNormalized
     type: File
     outputBinding:
-      glob: NA18537.vcf.gz
+      glob: '*.vcf.gz'
 label: TestPythonTool
