@@ -33,6 +33,11 @@ cwl-runner --debug bashtool.cwl bashjob.yml
 ```
 The fact that this works is why I am confident the issue with the other extract tool is config. But I don't like this 'solution' because I think it undermines the point of having a workflow in the first place. Which is why I think making an mc configured docker image to run mc cp out of is the way to go.
 
+## 6) Python test
+Initially I tried to use the minio client library to download the file from minio, but this proved to run into the same issue as extracting using mc cp. Since minio library was not ont he default docker image we would have to create and use a new one. So then I tried running the commands from command line through python, and it worked as expected.
+```bash
+cwl-runner python-extract-tool.cwl pyjob.yml
+```
 ## Overall Issues
 ### 1)
 There is need to make a docker image that has minio client configured with: mc config host add minio http://127.0.0.1:9000 miniotest miniotest --api S3v4
