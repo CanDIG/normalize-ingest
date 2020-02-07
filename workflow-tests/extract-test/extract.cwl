@@ -4,10 +4,11 @@ $namespaces:
   sbg: 'https://www.sevenbridges.com/'
 hints:
   DockerRequirement:
-    dockerPull: mcconfiged
-baseCommand:
-  - mc
-  - cp
+    dockerPull: minio/mc:latest
+  EnvVarRequirement:
+    envDef: 
+      MC_HOST_minio: http://miniotest:miniotest@host.docker.internal:9000
+baseCommand: cp
 inputs:
   - id: url
     type: string

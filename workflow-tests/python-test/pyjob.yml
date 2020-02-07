@@ -1,4 +1,0 @@
-pyfile:
-  class: File
-  path: PythonMC.py
-minio-path: minio/samples/unprocessed/NA18537.vcf.gz
