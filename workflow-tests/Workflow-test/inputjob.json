@@ -1,3 +1,4 @@
 {
-    "url": "minio/samples/unprocessed/NA18537.vcf.gz"
+    "in-url": "minio/samples/unprocessed/NA18537.vcf.gz",
+    "out-url": "minio/samples/processed"
 }

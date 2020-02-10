@@ -14,9 +14,11 @@ inputs:
     type: File
     inputBinding:
       position: 1
+  - id: normalizedPath
+    type: string
 outputs: []
 arguments:
   - position: 2
     prefix: ''
     separate: false
-    valueFrom: minio/samples/processed
+    valueFrom: $(inputs.normalizedPath)/$(inputs.normalized.nameroot)-normalized$(inputs.normalized.nameext)

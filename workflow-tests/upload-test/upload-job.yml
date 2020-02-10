@@ -1,3 +1,4 @@
 normalized:
   class: File
   path: normalized.vcf
+normalizedPath: minio/samples/processed

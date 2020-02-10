@@ -14,7 +14,7 @@ outputs:
   - id: normalized
     type: File
     outputBinding:
-      glob: '*'
+      glob: '*.vcf'
 label: Normalize
 arguments:
   - position: 0
