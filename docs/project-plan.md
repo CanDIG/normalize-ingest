@@ -7,24 +7,31 @@
 
 ```mermaid
 graph TB
-  subgraph Step1 - Configure MinIO Server for Bucket Notification
+
+  subgraph Step1
     mc[minio client] -->|configure bucket notification| ms[(minio server)]
-    ms -->|bucket for unprocessed vcfs| b1["/unprocessed"]
-    ms -->|bucket for normalized vcfs| b2["/processed"]
-  end
-  subgraph Step2 - Client Submission of Data
-    cl[client] -->|upload of vcf| ms
-  end
-  subgraph Step3 - Processing of Data by Workflow Engine
-    ms -->|send webhook| ls[listener]
-    ls -->|evaluate webhook conditions| wf[workflow]
-    wf -->|trigger `bcf-norm` workflow| wes[wes server]
-    wes -->|convert CWL workflow into compatible steps| hpc[hpc service]
-    hpc -->|pull copy of unprocessed vcf| ms
-    hpc -->|put `normalized` vcf back into minio| ms
-    hpc -->|create record of transaction on drs| drs[drs server]
+    ms -.-|unprocessed vcfs| b1["/minio/samples/unprocessed"]
+    ms -.-|normalized vcfs| b2["/minio/samples/processed"]
   end
 
+  subgraph Step2
+    cl[client] -->|upload of vcf| ms
+  end
+
+
+
+  subgraph Step3
+    ms -->|send webhook| ls[listener]
+    ls -->|trigger 'bcf-norm' workflow| wes[wes server]
+    wes -->|convert CWL into compatible steps| hpc[hpc/executor service]
+    b1 -->|pull copy of unprocessed vcf| hpc
+    hpc -->|put 'normalized' vcf back into minio| b2
+  end
+
+  subgraph Step4
+    ls -->|trigger 'update drs' workflow| wes
+    hpc -->|add DRS dataobject record| drs[drs server]
+  end
 ```
 
 
