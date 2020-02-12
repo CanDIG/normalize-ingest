@@ -19,7 +19,7 @@ steps:
         source: in-url
     out:
       - id: UnNormalized
-    run: extract.cwl
+    run: extract-tool/extract.cwl
     'sbg:x': 97
     'sbg:y': 0
   - id: normalize
@@ -28,7 +28,7 @@ steps:
         source: extract/UnNormalized
     out:
       - id: normalized
-    run: normalize.cwl
+    run: normalize-tool/normalize.cwl
     label: Normalize
     'sbg:x': 311.921875
     'sbg:y': 0
@@ -39,6 +39,6 @@ steps:
       - id: normalizedPath
         source: out-url 
     out: []
-    run: upload.cwl
+    run: upload-tool/upload.cwl
     'sbg:x': 589.671875
     'sbg:y': 0

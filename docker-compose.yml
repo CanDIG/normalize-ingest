@@ -56,6 +56,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - /var/lib/docker/volumes:/var/lib/docker/volumes:rw
+      - /tmp:/tmp
     ports:
       - "${WES_PORT:-5000}:5000"
     environment:
@@ -69,7 +70,6 @@ services:
       - --port=5000
       - --backend=${WES_BACKEND:-wes_service.cwl_runner}
       - --opt=runner=${WES_CWL_RUNNER:-cwltool}
-      - --opt=extra=--logLevel=${WES_LOG:-INFO}
 
 volumes:
   minio-data:

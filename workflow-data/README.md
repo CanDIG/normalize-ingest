@@ -1,7 +1,7 @@
 # Quick tests for CWL Tools and Workflow
-The workflow has 3 tools, extract, normalize and upload. The workflow takes a path to a .vcf.gz file in minio, downloads the file, normalizes it using bcftools norm, and uploads the normalized file into a given minio output folder with its original name appended with "-normalized.vcf". Each of the tools can be tested individually with their corresponding jobs.
+The workflow has 3 tools, extract, normalize and upload. The workflow takes a path to a .vcf.gz file in minio and a path to a final directory folder. It then downloads the .vcf.gz file, normalizes it using bcftools norm, and uploads the normalized file into a given minio output folder with its original name appended with "-normalized.vcf". Each of the tools can be tested individually with their corresponding jobs in their folders.
 ## 1) Extract tool
-Retrieves the .vcf.gz file from minio so minio must be running during this test. The default input path in the job file is minio/samples/unprocessed/NA18537.vcf.gz
+Retrieves the .vcf.gz file from minio thus minio must be running during this test. The default input path in the job file is minio/samples/unprocessed/NA18537.vcf.gz
 ```bash
 #Run Tool
 cwl-runner extract.cwl extract-job.json

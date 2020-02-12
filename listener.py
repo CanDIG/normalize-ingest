@@ -59,7 +59,7 @@ def main():
     # return "Workflow successful"
 
     # Retrieve Workflow Data from workflowInput.json
-    inFile = open("tests/workflowInput.json", "r")
+    inFile = open("workflowInput.json", "r")
     if inFile.mode == "r":
         param = inFile.read()
     param = json.loads(param)
@@ -76,7 +76,7 @@ def main():
     req = clientObject.run(
         param["workflow_url"], param["workflow_params"], param["workflow_attachment"])
 
-    return "Workflow Request Sent"
+    return "Workflow Request Sent", 200
 
 
 if __name__ == '__main__':

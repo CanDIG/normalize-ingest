@@ -1,7 +1,0 @@
-{
-    "workflow_params": "workflow-data/normalize-workflow/inputjob.json",
-    "workflow_type": "CWL",
-    "workflow_type_version": "v1.0",
-    "workflow_url": "workflow-data/normalize-workflow/normalizeoningest.cwl",
-    "workflow_attachment": "workflow-data/normalize-workflow/extract.cwl,workflow-data/normalize-workflow/normalize.cwl,workflow-data/normalize-workflow/upload.cwl"
-}
