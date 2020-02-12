@@ -5,46 +5,49 @@
 
 ## Workflow
 
-```mermaid
-graph TB
-
-  subgraph Step1
-    mc[minio client] -->|configure bucket notification| ms[(minio server)]
-    ms -.-|unprocessed vcfs| b1["/minio/samples/unprocessed"]
-    ms -.-|normalized vcfs| b2["/minio/samples/processed"]
-  end
-
-  subgraph Step2
-    cl[client] -->|upload of vcf| ms
-  end
-
-
-
-  subgraph Step3
-    ms -->|send webhook| ls[listener]
-    ls -->|trigger 'bcf-norm' workflow| wes[wes server]
-    wes -->|convert CWL into compatible steps| hpc[hpc/executor service]
-    b1 -->|pull copy of unprocessed vcf| hpc
-    hpc -->|put 'normalized' vcf back into minio| b2
-  end
-
-  subgraph Step4
-    ls -->|trigger 'update drs' workflow| wes
-    hpc -->|add DRS dataobject record| drs[drs server]
-  end
-```
-
+![Project Workflow](assets/workflow.png "workflow diagram")
 
 ## Task list
 
+- [✓] Evaluate methods of MinIO bucket notification
+- [✓] Create PoC of MinIO webhooks
+- [✓] Build listener service to receive bucket notification
+- [✓] Use notification to trigger workflow
+- [ ] Create a normalization CWL workflow
+  - [ ] Use inputs from S3/MinIO
+  - [ ] Run  htsfile  to retrieve sample
+  - [ ] Run  bcftools norm  on  file.vcf.gz
+  - [ ] Run  mc cp  to put processed file into minio/samples/processed/file.vcf
+- [✓] Create demo presentation
+  - [✓] Run  docker-compose
+  - [✓] Setup buckets
+  - [✓] Enable debugging for services
+  - [✓] Add sample files
+  - [✓] Ingest should run successful pipeline
+  - [✓] diff the output between two files
+- [ ] Expand PoC with DRS
+- [ ] Add ability to run workflow over WES
 
 ## Gantt Chart
 
 ```mermaid
 gantt
-title Project Timeline
-dateFormat YYYY-MM-DD
+  title Project Timeline
+  dateFormat YYYY-MM-DD
 
-section Minimal Viable Product
+  section Initial PoC
+    Evaluate methods of MinIO bucket notification
+    Create MVP of MinIO webhooks
+
+  section Create Listener Service
+    Evaluate methods to run serverless functions/lambdas
+    Trigger automated actions to occur based on bucket notification
+
+
+  section Develop CWL Workflow
+
+  section Run Workflows via WES
+
+  section Track Providence with DRS
 
 ```
