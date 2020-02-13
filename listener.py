@@ -14,7 +14,6 @@ from flask import Flask, jsonify, request
 from wes_client import util
 from wes_client.util import modify_jsonyaml_paths
 
-
 APP = Flask(__name__)
 @APP.route('/events', methods=['POST'])
 def main():
@@ -67,9 +66,15 @@ def main():
     # Split the comma seperated attachments into a list for input
     param["workflow_attachment"] = param["workflow_attachment"].split(',')
 
-    # construct a json object representing the parameters
-    # But this gives drive specific paths
+    # Construct a json object representing the parameters
     param["workflow_params"] = modify_jsonyaml_paths(param["workflow_params"])
+    # Convert to dic to add minio credentials, domain and port before casting back to json
+    dic = json.loads(param["workflow_params"])
+    dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
+    dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
+    dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
+    dic["minio-ui-port"] = os.environ["MINIO_UI_PORT"]
+    param["workflow_params"] = json.dumps(dic)
 
     clientObject = util.WESClient(
         {'auth': '', 'proto': 'http', 'host': "wes-server:5000"})

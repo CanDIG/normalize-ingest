@@ -2,3 +2,7 @@ normalized:
   class: File
   path: normalized.vcf
 normalizedPath: minio/samples/processed
+access: miniotest
+secret: miniotest
+domain: host.docker.internal
+port: "9000"

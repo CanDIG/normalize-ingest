@@ -1,11 +1,8 @@
 class: CommandLineTool
 cwlVersion: v1.0
-$namespaces:
-  sbg: 'https://www.sevenbridges.com/'
 hints:
   DockerRequirement:
     dockerPull: biocontainers/bcftools:v1.9-1-deb_cv1
-id: normalize
 baseCommand:
   - bcftools
 inputs:
@@ -18,7 +15,6 @@ outputs:
     type: File
     outputBinding:
       glob: '*.vcf'
-label: Normalize
 arguments:
   - position: 0
     prefix: ''

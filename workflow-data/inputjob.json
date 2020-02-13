@@ -1,4 +1,8 @@
 {
     "in-url": "minio/samples/unprocessed/NA18537.vcf.gz",
-    "out-url": "minio/samples/processed"
+    "out-url": "minio/samples/processed",
+    "minio-access": "miniotest",
+    "minio-secret": "miniotest",
+    "minio-domain": "host.docker.internal",
+    "minio-ui-port": "9000"
 }

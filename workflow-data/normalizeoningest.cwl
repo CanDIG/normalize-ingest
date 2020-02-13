@@ -1,15 +1,17 @@
 class: Workflow
 cwlVersion: v1.0
-id: normalizeoningest
-label: normalizeOnIngest
-$namespaces:
-  sbg: 'https://www.sevenbridges.com/'
 inputs:
   - id: in-url
     type: string
-    'sbg:x': 0
-    'sbg:y': 0
   - id: out-url
+    type: string
+  - id: minio-access
+    type: string
+  - id: minio-secret
+    type: string
+  - id: minio-domain
+    type: string
+  - id: minio-ui-port
     type: string
 outputs: []
 steps:
@@ -17,11 +19,17 @@ steps:
     in:
       - id: url
         source: in-url
+      - id: access
+        source: minio-access
+      - id: secret
+        source: minio-secret
+      - id: domain
+        source: minio-domain
+      - id: port
+        source: minio-ui-port
     out:
       - id: UnNormalized
     run: extract-tool/extract.cwl
-    'sbg:x': 97
-    'sbg:y': 0
   - id: normalize
     in:
       - id: UnNormalized
@@ -29,16 +37,19 @@ steps:
     out:
       - id: normalized
     run: normalize-tool/normalize.cwl
-    label: Normalize
-    'sbg:x': 311.921875
-    'sbg:y': 0
   - id: upload
     in:
       - id: normalized
         source: normalize/normalized
       - id: normalizedPath
-        source: out-url 
+        source: out-url
+      - id: access
+        source: minio-access
+      - id: secret
+        source: minio-secret
+      - id: domain
+        source: minio-domain
+      - id: port
+        source: minio-ui-port
     out: []
     run: upload-tool/upload.cwl
-    'sbg:x': 589.671875
-    'sbg:y': 0

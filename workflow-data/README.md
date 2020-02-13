@@ -24,5 +24,3 @@ Uses the extract, normalize and upload tool. Minio must be running and the job f
 #Run Workflow
 cwl-runner normalizeoningest.cwl inputjob.json
 ```
-## Overall Issues
-1) The credentials that the extract and upload tools use are miniotest miniotest. For now we want these to come from environment variables instead of being hard coded.

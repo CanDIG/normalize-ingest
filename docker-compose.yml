@@ -45,6 +45,7 @@ services:
     environment:
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
+      - MINIO_UI_PORT=${MINIO_UI_PORT:-9000}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
