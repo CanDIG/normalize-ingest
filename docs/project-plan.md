@@ -36,13 +36,12 @@ gantt
   dateFormat YYYY-MM-DD
 
   section Initial PoC
-    Evaluate methods of MinIO bucket notification
-    Create MVP of MinIO webhooks
+    Evaluate methods of MinIO bucket notification :a1, 2019-12-06, 3w
+    Evaluate methods to run serverless functions/lambdas :a2, after a1, 3w
+    Present MVP process :a3, after a2, 1w
 
   section Create Listener Service
-    Evaluate methods to run serverless functions/lambdas
-    Trigger automated actions to occur based on bucket notification
-
+    Trigger automated actions to occur based on bucket notification :b2, after b1, 1w
 
   section Develop CWL Workflow
 
