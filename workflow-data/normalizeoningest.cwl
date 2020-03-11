@@ -13,6 +13,10 @@ inputs:
     type: string
   - id: minio-ui-port
     type: string
+  - id: in-drs-data
+    type: string
+  - id: in-drs-url
+    type: string
 outputs: []
 steps:
   - id: extract
@@ -53,3 +57,11 @@ steps:
         source: minio-ui-port
     out: []
     run: upload-tool/upload.cwl
+  - id: drs
+    in:
+      - id: data
+        source: in-drs-data
+      - id: url
+        source: in-drs-url
+    out: []
+    run: updateDRS-tool/drs.cwl
