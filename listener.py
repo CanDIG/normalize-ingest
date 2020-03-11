@@ -68,8 +68,11 @@ def main():
 
     # Create a dictionary representing the job file
     dic = {}
-    dic["in-url"] = "minio/samples/unprocessed/NA18537.vcf.gz" # GET FROM SOMEWHERE
-    dic["out-url"] = "minio/samples/processed" # This will probably be set to somewhere
+    # get the input minio url
+    path = json.loads(request.data)['Key']
+    dic["in-url"] = "minio/" + path
+
+    dic["out-url"] = "minio/samples/processed" # This will probably be set to somewhere fixed
     dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
     dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
     dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
