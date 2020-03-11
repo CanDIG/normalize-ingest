@@ -41,7 +41,7 @@ services:
     #volumes:
       #- $PWD:/srv
     ports:
-      - "${LISTENER_PORT:-8080}:8080"
+      - "${LISTENER_PORT:-8081}:8081"
     environment:
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
@@ -49,6 +49,8 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
+      - DOS_PORT=${DOS_PORT:-8080}
+      - DOS_HOST=${DOS_HOST:-localhost}
     #command: ["flask", "run"]
 
   wes-server:
@@ -71,6 +73,15 @@ services:
       - --port=5000
       - --backend=${WES_BACKEND:-wes_service.cwl_runner}
       - --opt=runner=${WES_CWL_RUNNER:-cwltool}
+
+  ga4gh-dos:
+    # build: # No need to build here, we'll just pull the image
+    #   context: $PWD/lib/ga4gh-dos
+    #   args:
+    #     dos_version: ${DOS_VERSION:-0.4.2}
+    image: candig/ga4gh-drs-server:${DOS_VERSION:-latest}
+    ports:
+      - "${DOS_PORT:-8080}:8080" # port conflict with listener
 
 volumes:
   minio-data:

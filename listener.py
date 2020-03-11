@@ -74,6 +74,18 @@ def main():
     dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
     dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
     dic["minio-ui-port"] = os.environ["MINIO_UI_PORT"]
+
+    # Add drs data and url
+    dic["in-drs-url"] = "http://" + os.environ["DOS_HOST"] + \
+        ":" + os.environ["DOS_PORT"] + "/ga4gh/dos/v1/dataobjects"
+    dataDic = {"data_object":
+               {"id": "hg38-chr22",
+                "name": "Human Reference Chromosome 22",
+                "checksums": [{"checksum": "41b47ce1cc21b558409c19b892e1c0d1", "type": "md5"}],
+                "urls": [{"url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz"}],
+                "size": "12255678"}}
+    dic["data"] = "'" + json.dumps(dataDic) + "'" # Give data as string for convienence
+
     param["workflow_params"] = json.dumps(dic)
 
     clientObject = util.WESClient(
@@ -85,6 +97,6 @@ def main():
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8080)
+    APP.run(host='0.0.0.0', port=8081)
 # TODO: ue python to run bcftools norm in process
 # TODO: Generalize input workflow further

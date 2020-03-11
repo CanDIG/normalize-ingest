@@ -11,7 +11,7 @@ mc config host add minio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY -
 mc mb minio/samples/processed/
 mc mb minio/samples/unprocessed/
 
-mc admin config set minio notify_webhook:1 queue_limit="0" endpoint="http://listener:8080/events"
+mc admin config set minio notify_webhook:1 queue_limit="0" endpoint="http://listener:8081/events"
 mc admin service restart minio
 
 mc event add minio/samples/ arn:minio:sqs::1:webhook --prefix unprocessed/ --event put --suffix .vcf.gz
