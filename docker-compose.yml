@@ -50,7 +50,7 @@ services:
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
       - DOS_PORT=${DOS_PORT:-8080}
-      - DOS_HOST=${DOS_HOST:-localhost}
+      - DOS_HOST=${DOS_HOST:-host.docker.internal}
     #command: ["flask", "run"]
 
   wes-server:

@@ -55,7 +55,8 @@ steps:
         source: minio-domain
       - id: port
         source: minio-ui-port
-    out: []
+    out:
+      - id: fakeOutput
     run: upload-tool/upload.cwl
   - id: drs
     in:
@@ -63,5 +64,7 @@ steps:
         source: in-drs-data
       - id: url
         source: in-drs-url
+      - id: fakeInput
+        source: upload/fakeOutput
     out: []
     run: updateDRS-tool/drs.cwl

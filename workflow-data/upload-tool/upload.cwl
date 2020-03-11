@@ -22,7 +22,11 @@ inputs:
     type: string
   - id: port
     type: string
-outputs: []
+outputs:
+  - id: fakeOutput
+    type: string
+    outputBinding:
+      outputEval: 'uselessString'
 arguments:
   - position: 2
     prefix: ''

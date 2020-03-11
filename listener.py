@@ -66,10 +66,10 @@ def main():
     # Split the comma seperated attachments into a list for input
     param["workflow_attachment"] = param["workflow_attachment"].split(',')
 
-    # Construct a json object representing the parameters
-    param["workflow_params"] = modify_jsonyaml_paths(param["workflow_params"])
-    # Convert to dic to add minio credentials, domain and port before casting back to json
-    dic = json.loads(param["workflow_params"])
+    # Create a dictionary representing the job file
+    dic = {}
+    dic["in-url"] = "minio/samples/unprocessed/NA18537.vcf.gz" # GET FROM SOMEWHERE
+    dic["out-url"] = "minio/samples/processed" # This will probably be set to somewhere
     dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
     dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
     dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
@@ -84,14 +84,14 @@ def main():
                 "checksums": [{"checksum": "41b47ce1cc21b558409c19b892e1c0d1", "type": "md5"}],
                 "urls": [{"url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz"}],
                 "size": "12255678"}}
-    dic["data"] = "'" + json.dumps(dataDic) + "'" # Give data as string for convienence
+    dic["in-drs-data"] = json.dumps(dataDic) # Give data as string for convienence
 
-    param["workflow_params"] = json.dumps(dic)
+    job = json.dumps(dic)
 
     clientObject = util.WESClient(
         {'auth': '', 'proto': 'http', 'host': "wes-server:5000"})
     req = clientObject.run(
-        param["workflow_url"], param["workflow_params"], param["workflow_attachment"])
+        param["workflow_url"], job, param["workflow_attachment"])
 
     return "Workflow Request Sent", 200
 
