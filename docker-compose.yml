@@ -1,15 +1,81 @@
 version: '3.7'
 
 services:
+  # traefik:
+  #   image: traefik:${TRAEFIK_VERSION:-latest} #Change .env later to have all these env vars
+  #   # networks:
+  #   #   - ${DOCKER_NET:-bridge-net}
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   ports:
+  #     - "${TRAEFIK_HTTP_PORT:-80}:80"
+  #     - "${TRAEFIK_HTTPS_PORT:-443}:443"
+  #     - "${TRAEFIK_UI_PORT:-8000}:8080"
+  #   # deploy:
+  #   #   placement:
+  #   #     constraints:
+  #   #       - node.role == manager
+  #   #   restart_policy:
+  #   #     condition: on-failure
+  #   #     delay: 5s
+  #   #     max_attempts: 3
+  #   #     window: 120s
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.port=${TRAEFIK_UI_PORT:-8080}
+  #       # - traefik.docker.network=${DOCKER_NET:-bridge-net} 
+  #     - traefik.frontend.rule=Host:traefik.${MINIO_DOMAIN:-localhost}
+  #     - traefik.http.routers.traefik.rule=Path(/traefik)
+  #   # secrets:
+  #   #   - source: traefik-ssl-key
+  #   #     target: site.key
+  #   #   - source: traefik-ssl-crt
+  #   #     target: site.crt
+  #   environment:
+  #     - traefik_net=${TRAEFIK_NET:-bridge-net}
+  #     - traefik_domain=${MINIO_DOMAIN:-localhost}
+  #     - traefik_swarm=${TRAEFIK_SWARM:-false}
+  #   command:
+  #     - traefik
+  #     - --api
+  #     # - --consul
+  #     # - --consul.endpoint=consul:${CONSUL_HTTP_PORT:-8500}
+  #     - --docker
+  #     - --docker.domain=${MINIO_DOMAIN:-localhost}
+  #     # - --docker.network=${TRAEFIK_NET:-bridge-net}
+  #     # - --docker.swarmmode=${TRAEFIK_SWARM:-false}
+  #     - --docker.watch
+  #     - --defaultEntrypoints='http, https'
+  #     - --entryPoints="Name:http Address::${TRAEFIK_HTTP_PORT:-80} Redirect.EntryPoint:https"
+  #     - --entryPoints="Name:https Address::${TRAEFIK_HTTPS_PORT:-443} TLS:/run/secrets/site.crt,/run/secrets/site.key"
+  #     # - --kubernetes
+
+  # traefik:
+  #   image: traefik:v1.7
+  #   command: --api --docker
+  #   networks:
+  #     - ${DOCKER_NET:-bridge-net}
+  #   ports:
+  #     - "80:80"
+  #     - "8080:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  
   minio:
     image: minio/minio:${MINIO_VERSION:-latest}
     init: true
+    # networks:
+    #   - ${DOCKER_NET:-bridge-net}
     volumes:
       - minio-data:/data
       - minio-config:/root/.minio
       - minio-events:/tmp/events
     ports:
       - "${MINIO_UI_PORT:-9000}:9000"
+    # labels:
+    #     - traefik.enable=true
+    #     - traefik.port=${MINIO_UI_PORT:-9000}
+    #     - traefik.frontend.rule=Host:minio.${MINIO_DOMAIN:-localhost}
     environment:
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
@@ -40,8 +106,8 @@ services:
     init: true
     #volumes:
       #- $PWD:/srv
-    ports:
-      - "${LISTENER_PORT:-8081}:8081"
+    #ports:
+    #  - "${LISTENER_PORT:-8080}:8080" # This doesn't need to be open because minio uses service name, this also conflicts with traefik
     environment:
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
@@ -51,6 +117,7 @@ services:
       - FLASK_ENV=${LISTENER_ENV:-development}
       - DOS_PORT=${DOS_PORT:-8080}
       - DOS_HOST=${DOS_HOST:-host.docker.internal}
+      - WES_PORT=${WES_PORT:-5000}
     #command: ["flask", "run"]
 
   wes-server:
@@ -81,7 +148,7 @@ services:
     #     dos_version: ${DOS_VERSION:-0.4.2}
     image: candig/ga4gh-drs-server:${DOS_VERSION:-latest}
     ports:
-      - "${DOS_PORT:-8080}:8080" # port conflict with listener
+      - "${DOS_PORT:-8080}:8080"
 
 volumes:
   minio-data:
@@ -89,3 +156,6 @@ volumes:
   minio-events:
   mc-config:
 
+# networks:
+#   bridge-net:
+#     external: true

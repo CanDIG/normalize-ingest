@@ -91,8 +91,9 @@ def main():
 
     job = json.dumps(dic)
 
+    wesLoc = "wes-server:" + os.environ["WES_PORT"]
     clientObject = util.WESClient(
-        {'auth': '', 'proto': 'http', 'host': "wes-server:5000"})
+        {'auth': '', 'proto': 'http', 'host': wesLoc})
     req = clientObject.run(
         param["workflow_url"], job, param["workflow_attachment"])
 
