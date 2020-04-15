@@ -101,11 +101,11 @@ services:
 
   listener:
     build:
-      context: $PWD
+      context: $PWD/docker-files/listener
     image: candig/listener-service:${LISTENER_VERSION:-latest}
     init: true
-    #volumes:
-      #- $PWD:/srv
+    volumes:
+      - $PWD:/srv
     #ports:
     #  - "${LISTENER_PORT:-8080}:8080" # This doesn't need to be open because minio uses service name, this also conflicts with traefik
     environment:
