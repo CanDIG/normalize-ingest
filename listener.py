@@ -5,6 +5,7 @@ doc
 import json
 import os
 import subprocess
+import datetime
 
 from flask import Flask, jsonify, request
 
@@ -79,11 +80,14 @@ def main():
     dic["minio-ui-port"] = os.environ["MINIO_UI_PORT"]
 
     # Add drs data and url
+    d = datetime.datetime.utcnow()
+
     dic["in-drs-url"] = "http://" + os.environ["DOS_HOST"] + \
         ":" + os.environ["DOS_PORT"] + "/ga4gh/dos/v1/dataobjects"
     dataDic = {"data_object":
                {"id": "hg38-chr22",
                 "name": "Human Reference Chromosome 22",
+                "created": d.isoformat("T") + "Z",
                 "checksums": [{"checksum": "41b47ce1cc21b558409c19b892e1c0d1", "type": "md5"}],
                 "urls": [{"url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz"}],
                 "size": "12255678"}}
