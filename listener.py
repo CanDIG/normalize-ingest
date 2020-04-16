@@ -83,8 +83,10 @@ def main():
     d = datetime.datetime.utcnow()
 
     dic["in-drs-url"] = "http://" + os.environ["DOS_HOST"] + \
-        ":" + os.environ["DOS_PORT"] + "/ga4gh/dos/v1/dataobjects"
-    dataDic = {"data_object":
+        ":" + os.environ["DOS_PORT"] + "/ingest"
+    # This will need to conform to the meta data of the normalized file
+    dataDic = {"path": "/",
+        "data_object":
                {"id": "hg38-chr22",
                 "name": "Human Reference Chromosome 22",
                 "created": d.isoformat("T") + "Z",
