@@ -10,6 +10,7 @@ mc config host add minio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY -
 
 mc mb minio/samples/processed/
 mc mb minio/samples/unprocessed/
+mc mb minio/drs/
 
 mc admin config set minio notify_webhook:1 queue_limit="0" endpoint="http://listener:8081/events"
 mc admin service restart minio

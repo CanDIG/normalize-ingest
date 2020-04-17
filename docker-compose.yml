@@ -67,7 +67,7 @@ services:
     # networks:
     #   - ${DOCKER_NET:-bridge-net}
     volumes:
-      - minio-data:/data
+      - minio-data:${MINIO_DATA_DIR:-/data}
       - minio-config:/root/.minio
       - minio-events:/tmp/events
     ports:
@@ -109,6 +109,8 @@ services:
     #ports:
     #  - "${LISTENER_PORT:-8080}:8080" # This doesn't need to be open because minio uses service name, this also conflicts with traefik
     environment:
+      - MINIO_DATA_DIR=${MINIO_DATA_DIR:-/data}
+      - MINIO_PROCESSED_DIR=${MINIO_PROCESSED_DIR:-samples/processed}
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
       - MINIO_UI_PORT=${MINIO_UI_PORT:-9000}
@@ -147,6 +149,13 @@ services:
     image: candig/chord-drs:${CHORD_DRS_VERSION:-latest}
     ports:
       - "${CHORD_DRS_PORT:-8080}:8080"
+    volumes:
+      - minio-data:${MINIO_DATA_DIR:-/data}
+    environment:
+      - MINIO_URL=http://${MINIO_DOMAIN:-localhost}:${MINIO_UI_PORT:-9000}
+      - MINIO_USERNAME=${MINIO_ACCESS_KEY:-miniotest}
+      - MINIO_PASSWORD=${MINIO_SECRET_KEY:-miniotest}
+      - MINIO_BUCKET=${MINIO_DRS_BUCKET:-drs}
     command: ["--host", "0.0.0.0", "--port", "8080"]
 
 volumes:

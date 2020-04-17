@@ -25,39 +25,6 @@ def main():
     if not request.data:
         return "First Request Ignored", 406
 
-    # # Get the name of the added file
-    # dataobject = json.loads(request.data)['Key']
-    # path = dataobject.split("/")
-
-    # client = Minio('minio:9000',
-    #                access_key=str(os.environ["MINIO_ACCESS_KEY"]),
-    #                secret_key=str(os.environ["MINIO_SECRET_KEY"]),
-    #                secure=False)
-
-    # # Get a full object
-    # try:
-    #     client.fget_object(
-    #         str(path[0]), str(path[1] + "/" + path[2]), str(path[2]))
-    # except ResponseError as err:
-    #     print(err)
-
-    # # Run bcftools via subprocess and output to local directory
-    # outfile = str(path[2]).split(".")
-    # outfile = str(outfile[0] + "-normalized.vcf")
-
-    # subprocess.run(['bcftools', 'norm', '-d', 'all', str(path[2]),
-    #                 '-o', str(outfile)],check=True,
-    #                stdout=subprocess.PIPE, universal_newlines=True)
-
-    # # Put 'NA18537-normalized.vcf' into minio/samples/processed/
-    # try:
-    #     client.fput_object(str(path[0]), str("processed/" + outfile),
-    #                        str(outfile))
-    # except ResponseError as err:
-    #     print(err)
-
-    # return "Workflow successful"
-
     # Retrieve Workflow Data from workflowInput.json
     inFile = open("workflowInput.json", "r")
     if inFile.mode == "r":
@@ -69,11 +36,12 @@ def main():
 
     # Create a dictionary representing the job file
     dic = {}
-    # get the input minio url
+    # Get the input minio url
     path = json.loads(request.data)['Key']
     dic["in-url"] = "minio/" + path
 
-    dic["out-url"] = "minio/samples/processed" # This will probably be set to somewhere fixed
+    # Get relevant data passed to the listener from the .env through env vars
+    dic["out-url"] = "minio/" + os.environ["MINIO_PROCESSED_DIR"]
     dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
     dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
     dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
@@ -82,21 +50,31 @@ def main():
     # Add drs data and url
     d = datetime.datetime.utcnow()
 
+    # Create the drs ingestion endpoint for the post request in the cwl
     dic["in-drs-url"] = "http://" + os.environ["DOS_HOST"] + \
         ":" + os.environ["DOS_PORT"] + "/ingest"
-    # This will need to conform to the meta data of the normalized file
-    dataDic = {"path": "/",
-        "data_object":
+
+    # 'path' paramater in 'dataDic' needs to be the location of the file and must be accessible by the DRS container, this is currently done thorugh the named volume 'minio-data'
+    # It is assumed that the input is a .'ext'.gz file, if not alter the fileExt formula
+    # It is also assumed that parent folder/bucket names do not have a .
+    fileExt = path[path.find("."):path.rfind(".")]
+    fileName = path[path.rfind('/')+1:path.find('.')]
+
+    # Create meta-data, this will need to conform with the metadata of the normalized object
+    dataDic = {"path": os.environ["MINIO_DATA_DIR"] + "/" + os.environ["MINIO_PROCESSED_DIR"] + "/" + fileName + "-normalized" + fileExt,
+               "data_object":
                {"id": "hg38-chr22",
                 "name": "Human Reference Chromosome 22",
                 "created": d.isoformat("T") + "Z",
                 "checksums": [{"checksum": "41b47ce1cc21b558409c19b892e1c0d1", "type": "md5"}],
                 "urls": [{"url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz"}],
                 "size": "12255678"}}
-    dic["in-drs-data"] = json.dumps(dataDic) # Give data as string for convienence
 
+    # Give data as string for convienence
+    dic["in-drs-data"] = json.dumps(dataDic)
     job = json.dumps(dic)
 
+    # Make request to wes
     wesLoc = "wes-server:" + os.environ["WES_PORT"]
     clientObject = util.WESClient(
         {'auth': '', 'proto': 'http', 'host': wesLoc})
