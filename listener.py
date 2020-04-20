@@ -85,6 +85,4 @@ def main():
 
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8081)
-# TODO: ue python to run bcftools norm in process
-# TODO: Generalize input workflow further
+    APP.run(host='0.0.0.0', port=os.environ["LISTENER_PORT"])

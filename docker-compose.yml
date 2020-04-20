@@ -106,9 +106,10 @@ services:
     init: true
     volumes:
       - $PWD:/srv
-    #ports:
-    #  - "${LISTENER_PORT:-8080}:8080" # This doesn't need to be open because minio uses service name, this also conflicts with traefik
+    ports:
+     - "${LISTENER_PORT:-8081}:8081"
     environment:
+      - LISTENER_PORT=${LISTENER_PORT:-8081}
       - MINIO_DATA_DIR=${MINIO_DATA_DIR:-/data}
       - MINIO_PROCESSED_DIR=${MINIO_PROCESSED_DIR:-samples/processed}
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
