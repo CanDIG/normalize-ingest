@@ -118,8 +118,10 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
-      - DOS_PORT=${DOS_PORT:-8080}
+      - DOS_PORT=${DOS_PORT:-8082}
       - DOS_HOST=${DOS_HOST:-host.docker.internal}
+      - CHORD_DRS_PORT=${CHORD_DRS_PORT:-8080}
+      - CHORD_DRS_HOST=${CHORD_DRS_HOST:-host.docker.internal}
       - WES_PORT=${WES_PORT:-5000}
     #command: ["flask", "run"]
 

@@ -51,8 +51,9 @@ def main():
     d = datetime.datetime.utcnow()
 
     # Create the drs ingestion endpoint for the post request in the cwl
-    dic["in-drs-url"] = "http://" + os.environ["DOS_HOST"] + \
-        ":" + os.environ["DOS_PORT"] + "/ingest"
+    # If using GA4GH's DOS, the env vars and endpoint need to be updated
+    dic["in-drs-url"] = "http://" + os.environ["CHORD_DRS_HOST"] + \
+        ":" + os.environ["CHORD_DRS_PORT"] + "/ingest"
 
     # 'path' paramater in 'dataDic' needs to be the location of the file and must be accessible by the DRS container, this is currently done thorugh the named volume 'minio-data'
     # It is assumed that the input is a .'ext'.gz file, if not alter the fileExt formula
