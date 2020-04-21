@@ -5,85 +5,86 @@ doc
 import json
 import os
 import subprocess
+import datetime
 
 from flask import Flask, jsonify, request
 
-from minio import Minio
-from minio.error import ResponseError
+# from minio import Minio
+# from minio.error import ResponseError
 
-# from wes_client import util
-# from wes_client.util import modify_jsonyaml_paths
-
+from wes_client import util
+from wes_client.util import modify_jsonyaml_paths
 
 APP = Flask(__name__)
 @APP.route('/events', methods=['POST'])
 def main():
     """
-    doc
+    This endpoint makes a call to WES using the wes_client library
+    The contents of the request are taken from environment variables, workflowInput.json and from the incoming request
     """
     # minio events result in two calls, so we ignore the first
     if not request.data:
         return "First Request Ignored", 406
 
-    # Get the name of the added file
-    dataobject = json.loads(request.data)['Key']
-    path = dataobject.split("/")
+    # Retrieve Workflow Data from workflowInput.json on which workflow to run and attachments
+    inFile = open("workflowInput.json", "r")
+    if inFile.mode == "r":
+        param = inFile.read()
+    param = json.loads(param)
 
-    client = Minio('minio:9000',
-                   access_key=str(os.environ["MINIO_ACCESS_KEY"]),
-                   secret_key=str(os.environ["MINIO_SECRET_KEY"]),
-                   secure=False)
+    # Split the comma seperated attachments into a list for WES call
+    param["workflow_attachment"] = param["workflow_attachment"].split(',')
 
-    # Get a full object
-    try:
-        client.fget_object(
-            str(path[0]), str(path[1] + "/" + path[2]), str(path[2]))
-    except ResponseError as err:
-        print(err)
+    # Create a dictionary representing the job file
+    dic = {}
+    # Get the input minio url
+    path = json.loads(request.data)['Key']
+    dic["in-url"] = "minio/" + path
 
-    # Run bcftools via subprocess and output to local directory
-    outfile = str(path[2]).split(".")
-    outfile = str(outfile[0] + "-normalized.vcf")
+    # Get relevant data passed to the listener from the .env file through env vars
+    dic["out-url"] = "minio/" + os.environ["MINIO_PROCESSED_DIR"]
+    dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
+    dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
+    dic["minio-domain"] = os.environ["MINIO_DOMAIN"]
+    dic["minio-ui-port"] = os.environ["MINIO_UI_PORT"]
 
-    subprocess.run(['bcftools', 'norm', '-d', 'all', str(path[2]),
-                    '-o', str(outfile)],check=True,
-                   stdout=subprocess.PIPE, universal_newlines=True)
+    # Add drs data and url
+    d = datetime.datetime.utcnow()
 
-    # Put 'NA18537-normalized.vcf' into minio/samples/processed/
-    try:
-        client.fput_object(str(path[0]), str("processed/" + outfile),
-                           str(outfile))
-    except ResponseError as err:
-        print(err)
+    # Create the drs ingestion endpoint for the post request in the cwl
+    # If using GA4GH's DOS, the env vars and endpoint need to be updated
+    dic["in-drs-url"] = "http://" + os.environ["CHORD_DRS_HOST"] + \
+        ":" + os.environ["CHORD_DRS_PORT"] + "/ingest"
 
-    return "Workflow successful"
+    # 'path' paramater in 'dataDic' needs to be the location of the file and must be accessible by the DRS container, this is currently done thorugh the named volume 'minio-data'
+    # It is assumed that the input is a .'ext'.gz file, if not alter the fileExt formula
+    # It is also assumed that parent folder/bucket names do not have a .
+    fileExt = path[path.find("."):path.rfind(".")]
+    fileName = path[path.rfind('/')+1:path.find('.')]
 
+    # Create meta-data, this will need to conform with the metadata of the normalized object
+    dataDic = {"path": os.environ["MINIO_DATA_DIR"] + "/" + os.environ["MINIO_PROCESSED_DIR"] + "/" + fileName + "-normalized" + fileExt,
+               "data_object":
+               {"id": "hg38-chr22",
+                "name": "Human Reference Chromosome 22",
+                "created": d.isoformat("T") + "Z",
+                "checksums": [{"checksum": "41b47ce1cc21b558409c19b892e1c0d1", "type": "md5"}],
+                "urls": [{"url": "http://hgdownload.cse.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz"}],
+                "size": "12255678"}}
 
-    # Retrieve Workflow Data from workflowInput.json
-    # inFile = open("workflowInput.json", "r")
-    # if inFile.mode == "r":
-        # param = inFile.read()
-    # param = json.loads(param)
+    # Give data as string for convienence
+    dic["in-drs-data"] = json.dumps(dataDic)
+    job = json.dumps(dic)
 
-    # Fix key naming for request
-    # param["workflow_params"] = param.pop("workflow_params/json_path")
-    # param["workflow_url"] = param.pop("workflow_url/name")
-    # Split the comma seperated attachments into a list for input
-    # param["workflow_attachment"] = param["workflow_attachment"].split(',')
+    # Make request to WES using wes_client WESClient object
+    wesLoc = "wes-server:" + os.environ["WES_PORT"]
+    clientObject = util.WESClient(
+        {'auth': '', 'proto': 'http', 'host': wesLoc})
+    req = clientObject.run(
+        param["workflow_url"], job, param["workflow_attachment"])
 
-    # construct a json object representing the parameters
-    # But this gives drive specific paths
-    # param["workflow_params"] = modify_jsonyaml_paths(param["workflow_params"])
-
-    # clientObject = util.WESClient(
-    # {'auth': '', 'proto': 'http', 'host': "wes-server:5000"})
-    # req = clientObject.run(
-    # param["workflow_url"], param["workflow_params"], param["workflow_attachment"])
-
-    # return "Workflow Request Sent"
-
+    # Return workflow id of the created workflow, as well as status code 200
+    return req, 200
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8080)
-# TODO: ue python to run bcftools norm in process
-# TODO: Generalize input workflow further
+    APP.run(host='0.0.0.0', port=os.environ["LISTENER_PORT"])

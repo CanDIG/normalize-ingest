@@ -1,15 +1,81 @@
 version: '3.7'
 
 services:
+  # traefik:
+  #   image: traefik:${TRAEFIK_VERSION:-latest} #Change .env later to have all these env vars
+  #   # networks:
+  #   #   - ${DOCKER_NET:-bridge-net}
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   ports:
+  #     - "${TRAEFIK_HTTP_PORT:-80}:80"
+  #     - "${TRAEFIK_HTTPS_PORT:-443}:443"
+  #     - "${TRAEFIK_UI_PORT:-8000}:8080"
+  #   # deploy:
+  #   #   placement:
+  #   #     constraints:
+  #   #       - node.role == manager
+  #   #   restart_policy:
+  #   #     condition: on-failure
+  #   #     delay: 5s
+  #   #     max_attempts: 3
+  #   #     window: 120s
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.port=${TRAEFIK_UI_PORT:-8080}
+  #       # - traefik.docker.network=${DOCKER_NET:-bridge-net} 
+  #     - traefik.frontend.rule=Host:traefik.${MINIO_DOMAIN:-localhost}
+  #     - traefik.http.routers.traefik.rule=Path(/traefik)
+  #   # secrets:
+  #   #   - source: traefik-ssl-key
+  #   #     target: site.key
+  #   #   - source: traefik-ssl-crt
+  #   #     target: site.crt
+  #   environment:
+  #     - traefik_net=${TRAEFIK_NET:-bridge-net}
+  #     - traefik_domain=${MINIO_DOMAIN:-localhost}
+  #     - traefik_swarm=${TRAEFIK_SWARM:-false}
+  #   command:
+  #     - traefik
+  #     - --api
+  #     # - --consul
+  #     # - --consul.endpoint=consul:${CONSUL_HTTP_PORT:-8500}
+  #     - --docker
+  #     - --docker.domain=${MINIO_DOMAIN:-localhost}
+  #     # - --docker.network=${TRAEFIK_NET:-bridge-net}
+  #     # - --docker.swarmmode=${TRAEFIK_SWARM:-false}
+  #     - --docker.watch
+  #     - --defaultEntrypoints='http, https'
+  #     - --entryPoints="Name:http Address::${TRAEFIK_HTTP_PORT:-80} Redirect.EntryPoint:https"
+  #     - --entryPoints="Name:https Address::${TRAEFIK_HTTPS_PORT:-443} TLS:/run/secrets/site.crt,/run/secrets/site.key"
+  #     # - --kubernetes
+
+  # traefik:
+  #   image: traefik:v1.7
+  #   command: --api --docker
+  #   networks:
+  #     - ${DOCKER_NET:-bridge-net}
+  #   ports:
+  #     - "80:80"
+  #     - "8080:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  
   minio:
     image: minio/minio:${MINIO_VERSION:-latest}
     init: true
+    # networks:
+    #   - ${DOCKER_NET:-bridge-net}
     volumes:
-      - minio-data:/data
+      - minio-data:${MINIO_DATA_DIR:-/data}
       - minio-config:/root/.minio
       - minio-events:/tmp/events
     ports:
       - "${MINIO_UI_PORT:-9000}:9000"
+    # labels:
+    #     - traefik.enable=true
+    #     - traefik.port=${MINIO_UI_PORT:-9000}
+    #     - traefik.frontend.rule=Host:minio.${MINIO_DOMAIN:-localhost}
     environment:
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
@@ -35,19 +101,28 @@ services:
 
   listener:
     build:
-      context: $PWD
+      context: $PWD/docker-files/listener
     image: candig/listener-service:${LISTENER_VERSION:-latest}
     init: true
-    #volumes:
-      #- $PWD:/srv
+    volumes:
+      - $PWD:/srv
     ports:
-      - "${LISTENER_PORT:-8080}:8080"
+     - "${LISTENER_PORT:-8081}:8081"
     environment:
+      - LISTENER_PORT=${LISTENER_PORT:-8081}
+      - MINIO_DATA_DIR=${MINIO_DATA_DIR:-/data}
+      - MINIO_PROCESSED_DIR=${MINIO_PROCESSED_DIR:-samples/processed}
       - MINIO_REGION=${MINIO_REGION:-us-east-1}
       - MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
+      - MINIO_UI_PORT=${MINIO_UI_PORT:-9000}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-miniotest}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-miniotest}
       - FLASK_ENV=${LISTENER_ENV:-development}
+      - DOS_PORT=${DOS_PORT:-8082}
+      - DOS_HOST=${DOS_HOST:-host.docker.internal}
+      - CHORD_DRS_PORT=${CHORD_DRS_PORT:-8080}
+      - CHORD_DRS_HOST=${CHORD_DRS_HOST:-host.docker.internal}
+      - WES_PORT=${WES_PORT:-5000}
     #command: ["flask", "run"]
 
   wes-server:
@@ -56,6 +131,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - /var/lib/docker/volumes:/var/lib/docker/volumes:rw
+      - /tmp:/tmp
     ports:
       - "${WES_PORT:-5000}:5000"
     environment:
@@ -69,7 +145,21 @@ services:
       - --port=5000
       - --backend=${WES_BACKEND:-wes_service.cwl_runner}
       - --opt=runner=${WES_CWL_RUNNER:-cwltool}
-      - --opt=extra=--logLevel=${WES_LOG:-INFO}
+
+  chord-drs:
+    build:
+      context: $PWD/docker-files/drs-server
+    image: candig/chord-drs:${CHORD_DRS_VERSION:-latest}
+    ports:
+      - "${CHORD_DRS_PORT:-8080}:8080"
+    volumes:
+      - minio-data:${MINIO_DATA_DIR:-/data}
+    environment:
+      - MINIO_URL=http://${MINIO_DOMAIN:-localhost}:${MINIO_UI_PORT:-9000}
+      - MINIO_USERNAME=${MINIO_ACCESS_KEY:-miniotest}
+      - MINIO_PASSWORD=${MINIO_SECRET_KEY:-miniotest}
+      - MINIO_BUCKET=${MINIO_DRS_BUCKET:-drs}
+    command: ["--host", "0.0.0.0", "--port", "8080"]
 
 volumes:
   minio-data:
@@ -77,3 +167,6 @@ volumes:
   minio-events:
   mc-config:
 
+# networks:
+#   bridge-net:
+#     external: true

@@ -1,0 +1,7 @@
+{
+    "url": "minio/samples/unprocessed/NA18537.vcf.gz",
+    "access": "miniotest",
+    "secret": "miniotest",
+    "domain": "host.docker.internal",
+    "port": "9000"
+}
