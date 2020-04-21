@@ -19,19 +19,20 @@ APP = Flask(__name__)
 @APP.route('/events', methods=['POST'])
 def main():
     """
-    doc
+    This endpoint makes a call to WES using the wes_client library
+    The contents of the request are taken from environment variables, workflowInput.json and from the incoming request
     """
     # minio events result in two calls, so we ignore the first
     if not request.data:
         return "First Request Ignored", 406
 
-    # Retrieve Workflow Data from workflowInput.json
+    # Retrieve Workflow Data from workflowInput.json on which workflow to run and attachments
     inFile = open("workflowInput.json", "r")
     if inFile.mode == "r":
         param = inFile.read()
     param = json.loads(param)
 
-    # Split the comma seperated attachments into a list for input
+    # Split the comma seperated attachments into a list for WES call
     param["workflow_attachment"] = param["workflow_attachment"].split(',')
 
     # Create a dictionary representing the job file
@@ -40,7 +41,7 @@ def main():
     path = json.loads(request.data)['Key']
     dic["in-url"] = "minio/" + path
 
-    # Get relevant data passed to the listener from the .env through env vars
+    # Get relevant data passed to the listener from the .env file through env vars
     dic["out-url"] = "minio/" + os.environ["MINIO_PROCESSED_DIR"]
     dic["minio-access"] = os.environ["MINIO_ACCESS_KEY"]
     dic["minio-secret"] = os.environ["MINIO_SECRET_KEY"]
@@ -75,15 +76,15 @@ def main():
     dic["in-drs-data"] = json.dumps(dataDic)
     job = json.dumps(dic)
 
-    # Make request to wes
+    # Make request to WES using wes_client WESClient object
     wesLoc = "wes-server:" + os.environ["WES_PORT"]
     clientObject = util.WESClient(
         {'auth': '', 'proto': 'http', 'host': wesLoc})
     req = clientObject.run(
         param["workflow_url"], job, param["workflow_attachment"])
 
-    return "Workflow Request Sent", 200
-
+    # Return workflow id of the created workflow, as well as status code 200
+    return req, 200
 
 if __name__ == '__main__':
     APP.run(host='0.0.0.0', port=os.environ["LISTENER_PORT"])
