@@ -59,7 +59,7 @@ swagger-spec-validator==2.4.3
 texttable==1.6.2
 toil==3.22.0
 typing-extensions==3.7.4.1
-urllib3==1.25.8
+urllib3==1.26.5
 websocket-client==0.57.0
 Werkzeug==0.16.1
 wes-service==3.3
